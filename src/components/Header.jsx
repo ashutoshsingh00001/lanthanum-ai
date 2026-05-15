@@ -3,6 +3,7 @@ import { Code, Download, Home, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCanvas } from '../state/CanvasContext';
 import ExportModal from './ExportModal';
+import lanthanumLogo from '../assets/Lanthanum.png';
 
 export default function Header() {
   const { state } = useCanvas();
@@ -13,7 +14,7 @@ export default function Header() {
     <>
       <header className="app-header">
         <div className="header-left">
-          <img src="src/assets/Lanthanum.png" alt="Lanthanum AI" className="header-logo" />
+          <img src={lanthanumLogo} alt="Lanthanum AI" className="header-logo" />
           <div className="header-badge">
             <span>Beta</span>
           </div>

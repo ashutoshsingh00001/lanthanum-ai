@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Code2, Layout, MousePointer2, Download, Palette, Bot, Monitor, Zap } from 'lucide-react';
 import lanthanumLogo from '../assets/Lanthanum.png';
 import editorMockup from '../assets/mockup.png';
+import lanthanumLogos from '../assets/Lanthanum-logos.png';
 import './LandingPage.css';
 
 export default function LandingPage() {
@@ -59,7 +60,7 @@ export default function LandingPage() {
 
       {/* Navigation */}
       <nav className="landing-nav" id="landing-nav">
-        <img src="src/assets/Lanthanum-logos.png" alt="Lanthanum AI" className="nav-logo" />
+        <img src={lanthanumLogos} alt="Lanthanum AI" className="nav-logo" />
         <div className="nav-links">
           <a href="#features" className="nav-link">Features</a>
           <a href="#how-it-works" className="nav-link">How It Works</a>
@@ -330,7 +331,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="landing-footer">
         <div className="footer-left">
-          <img src="src/assets/Lanthanum-logos.png" alt="Lanthanum AI" className="footer-logo" />
+          <img src={lanthanumLogos} alt="Lanthanum AI" className="footer-logo" />
           <span className="footer-text">© 2026 Lanthanum AI. All rights reserved.</span>
         </div>
         <div className="footer-links">

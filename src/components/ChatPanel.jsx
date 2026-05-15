@@ -3,6 +3,7 @@ import { Send, ExternalLink, Paintbrush, MessageSquare, Copy, Check } from 'luci
 import { extractHtmlFromResponse, extractDescription, streamGemini, callGemini, UI_SYSTEM_PROMPT } from '../services/aiService';
 import { useCanvas } from '../state/CanvasContext';
 import StyleEditorPanel from './StyleEditorPanel';
+import laLogo from '../assets/LA.png';
 
 
 // ── Message Renderer — parses code blocks from streamed text ──────────────────
@@ -294,7 +295,7 @@ export default function ChatPanel() {
           {messages.length === 0 ? (
             <div className="welcome-state">
               <div>
-                <img className="icon-wrapper" src="src/assets/LA.png" alt="Logo" />
+                <img className="icon-wrapper" src={laLogo} alt="Logo" />
               </div>
               <h3>Design with Lanthanum AI</h3>
               <p>
