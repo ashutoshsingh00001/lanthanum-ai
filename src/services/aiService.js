@@ -1,49 +1,17 @@
 /**
- * AI Service — Gemini API
+ * AI Service — NVIDIA NIM API
  */
 
 const AI_API_URL = '/api/generate';
 
-const UI_SYSTEM_PROMPT = `You are a world-class UI/UX designer and elite frontend developer. Your goal is to create STUNNING, premium, and state-of-the-art web interfaces using HTML and Tailwind CSS.
+import designGuidelines from '../prompts/design-guidelines.md?raw';
 
-RULES:
-1. Always return a COMPLETE, self-contained HTML document starting with <!DOCTYPE html>.
-2. Include Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
-3. Include DaisyUI and Flowbite if needed for premium components.
-4. Use Tailwind config to set up modern fonts (Inter, Outfit).
-5. DESIGN PRINCIPLES:
-   - Use vibrant, harmonious color palettes (avoid default colors).
-   - Use modern patterns: Bento grids, glassmorphism, sleek gradients.
-   - Add subtle micro-animations (hover:scale-[1.02], transition-all).
-   - Ensure ample whitespace and perfect alignment.
-6. Provide a brief one-sentence description of the design before the HTML block.
+const UI_SYSTEM_PROMPT = `${designGuidelines}
 
-RESPONSE FORMAT:
-A sleek SaaS landing page with a hero section and glassmorphism effect.
-\`\`\`html
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            heading: ['Outfit', 'sans-serif'],
-          },
-        }
-      }
-    }
-  </script>
-</head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
-  <!-- UI content here -->
-</body>
-</html>
-\`\`\``;
+FINAL INSTRUCTION:
+Generate the requested UI following the guidelines above.
+Return ONLY a brief one-sentence description followed by the complete code in a \`\`\`html code block.
+Do not include any conversational filler.`;
 
 const AGENT_SYSTEM_PROMPT = `You are an AI design agent that can manipulate a design canvas. You have access to the following tools:
 
@@ -128,30 +96,125 @@ export function extractToolCalls(text) {
   return null;
 }
 
+const PROXY_URL = import.meta.env.VITE_CLAUDE_PROXY_URL || 'http://localhost:8080';
+const MODEL = import.meta.env.VITE_CLAUDE_MODEL || 'claude-sonnet-4-6';
+
+function normalizeConversationHistory(conversationHistory = []) {
+  return conversationHistory
+    .filter((msg) => msg?.content)
+    .map((msg) => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content,
+    }));
+}
+
 export async function callGemini(systemPrompt, userMessage, conversationHistory = []) {
-  const response = await fetch(AI_API_URL, {
+  const messages = [
+    ...normalizeConversationHistory(conversationHistory),
+    { role: 'user', content: userMessage },
+  ];
+
+  const response = await fetch(`${PROXY_URL}/v1/messages`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': 'test',
+      'anthropic-version': '2023-06-01',
+    },
     body: JSON.stringify({
-      systemPrompt,
-      userMessage,
-      conversationHistory,
+      model: MODEL,
+      max_tokens: 8192,
+      system: systemPrompt,
+      messages,
     }),
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data?.error || 'Gemini API request failed');
+    throw new Error(data?.error?.message || data?.message || 'AI API request failed');
   }
 
-  return data.text;
+  const text = data?.content
+    ?.filter((block) => block.type === 'text')
+    .map((block) => block.text)
+    .join('')
+    .trim();
+
+  if (!text) throw new Error('API returned an empty response');
+
+  return text;
 }
 
 export async function* streamGemini(systemPrompt, userMessage, conversationHistory = []) {
-  const fullContent = await callGemini(systemPrompt, userMessage, conversationHistory);
+  const messages = [
+    ...normalizeConversationHistory(conversationHistory),
+    { role: 'user', content: userMessage },
+  ];
+
+  const response = await fetch(`${PROXY_URL}/v1/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': 'test',
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 8192,
+      system: systemPrompt,
+      messages,
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error?.message || data?.message || 'AI API streaming request failed');
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let fullContent = '';
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const dataStr = line.replace(/^data: /, '');
+      if (dataStr.trim() === '[DONE]') continue;
+
+      try {
+        const event = JSON.parse(dataStr);
+        let chunk = '';
+
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          chunk = event.delta.text || '';
+        }
+
+        if (chunk) {
+          fullContent += chunk;
+          yield {
+            chunk,
+            fullContent,
+            done: false,
+          };
+        }
+      } catch (e) {
+        // Skip unparseable lines
+      }
+    }
+  }
+
   yield {
-    chunk: fullContent,
+    chunk: '',
     fullContent,
     done: true,
   };

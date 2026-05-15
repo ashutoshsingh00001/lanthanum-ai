@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, ChevronRight, Link, MousePointer2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Link, MousePointer2, Save, Check } from 'lucide-react';
+import { useCanvas } from '../state/CanvasContext';
 
 // ── Section/Row helpers ───────────────────────────────────────────────────────
 function Section({ title, children, open: defaultOpen = true }) {
@@ -68,17 +69,28 @@ function parseInlineStyle(styleStr) {
 
 // ── Main Style Editor Panel ───────────────────────────────────────────────────
 export default function StyleEditorPanel() {
+  const { actions } = useCanvas();
   const [selEl, setSelEl] = useState(null); // { id, tag }
   const [styles, setStyles] = useState({});
   const [marginLocked, setMarginLocked] = useState(true);
   const [paddingLocked, setPaddingLocked] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
-  // Listen for ELEMENT_SELECTED from Visual Editor iframe
+  // Listen for ELEMENT_SELECTED / ELEMENT_DESELECTED from Visual Editor iframe
   useEffect(() => {
     const handler = e => {
       if (e.data?.type === 'ELEMENT_SELECTED') {
         setSelEl({ id: e.data.id, tag: e.data.tag });
         setStyles(parseInlineStyle(e.data.styles));
+        setIsDirty(false);
+        setIsSaved(false);
+      }
+      if (e.data?.type === 'ELEMENT_DESELECTED') {
+        setSelEl(null);
+        setStyles({});
+        setIsDirty(false);
+        setIsSaved(false);
       }
     };
     window.addEventListener('message', handler);
@@ -92,6 +104,8 @@ export default function StyleEditorPanel() {
       iframe.contentWindow.postMessage({ type: 'APPLY_STYLES', id: selEl.id, styles: { [prop]: value } }, '*');
     }
     setStyles(prev => ({ ...prev, [prop]: value }));
+    setIsDirty(true);
+    setIsSaved(false);
   }, [selEl]);
 
   const applyStyles = useCallback((obj) => {
@@ -100,7 +114,50 @@ export default function StyleEditorPanel() {
       iframe.contentWindow.postMessage({ type: 'APPLY_STYLES', id: selEl.id, styles: obj }, '*');
     }
     setStyles(prev => ({ ...prev, ...obj }));
+    setIsDirty(true);
+    setIsSaved(false);
   }, [selEl]);
+
+  // Save changes: extract current HTML from iframe and update mainCode
+  const handleSaveChanges = useCallback(() => {
+    const iframe = document.querySelector('iframe[title="Visual Editor"]');
+    if (!iframe?.contentWindow?.document) return;
+
+    try {
+      const doc = iframe.contentWindow.document;
+      const clonedDoc = doc.documentElement.cloneNode(true);
+
+      // Remove injected scripts (nav blocker + inspector)
+      clonedDoc.querySelectorAll('script').forEach(script => {
+        const text = script.textContent || '';
+        if (text.includes('ELEMENT_SELECTED') || text.includes('__lanthanum') || (text.includes('closest') && text.includes('preventDefault'))) {
+          script.remove();
+        }
+      });
+
+      // Remove injected inspector style block
+      clonedDoc.querySelectorAll('style').forEach(style => {
+        if (style.textContent.includes('__lanthanum')) {
+          style.remove();
+        }
+      });
+
+      // Remove inspector CSS classes from all elements
+      clonedDoc.querySelectorAll('.__lanthanum-selected, .__lanthanum-hovered').forEach(el => {
+        el.classList.remove('__lanthanum-selected', '__lanthanum-hovered');
+        // Clean up empty class attribute
+        if (el.classList.length === 0) el.removeAttribute('class');
+      });
+
+      const html = '<!DOCTYPE html>\n<html lang="en">' + clonedDoc.innerHTML + '</html>';
+      actions.setMainCode(html);
+      setIsDirty(false);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    } catch (err) {
+      console.error('Failed to save changes:', err);
+    }
+  }, [actions]);
 
   const getSpacing = prefix => ({
     top: styles[`${prefix}-top`] || '',
@@ -208,6 +265,24 @@ export default function StyleEditorPanel() {
         <PropRow label="Box Shadow"><input className="gjs-input" type="text" value={styles['box-shadow'] || ''} onChange={e => applyStyle('box-shadow', e.target.value)} placeholder="0 4px 12px rgba(0,0,0,.2)" /></PropRow>
         <PropRow label="Transition"><input className="gjs-input" type="text" value={styles['transition'] || ''} onChange={e => applyStyle('transition', e.target.value)} placeholder="all 0.2s ease" /></PropRow>
       </Section>
+
+      {/* Save Changes Button */}
+      {isDirty && (
+        <div className="style-save-bar">
+          <button className="style-save-btn" onClick={handleSaveChanges}>
+            <Save size={14} />
+            <span>Save Changes</span>
+          </button>
+        </div>
+      )}
+      {isSaved && (
+        <div className="style-save-bar saved">
+          <div className="style-saved-msg">
+            <Check size={14} />
+            <span>Changes saved</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

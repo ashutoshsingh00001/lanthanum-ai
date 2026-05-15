@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Home } from 'lucide-react';
+import { Code, Download, Home, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCanvas } from '../state/CanvasContext';
 import ExportModal from './ExportModal';
@@ -14,6 +14,9 @@ export default function Header() {
       <header className="app-header">
         <div className="header-left">
           <img src="src/assets/Lanthanum.png" alt="Lanthanum AI" className="header-logo" />
+          <div className="header-badge">
+            <span>Beta</span>
+          </div>
         </div>
         <div className="header-right">
           <Link to="/" className="header-btn home-btn" title="Back to Home">

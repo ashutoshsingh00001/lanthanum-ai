@@ -18,6 +18,16 @@ const NAV_BLOCKER_SCRIPT = `
 
 // Inspector injected only in interactive (Visual Editor) mode
 const INSPECTOR_SCRIPT = `
+<style>
+  .__lanthanum-selected {
+    outline: 2px solid #FB8733 !important;
+    outline-offset: 2px !important;
+  }
+  .__lanthanum-hovered {
+    outline: 1px dashed rgba(251,135,51,0.4) !important;
+    outline-offset: 1px !important;
+  }
+</style>
 <script>
 (function() {
   let nextId = 1;
@@ -30,12 +40,24 @@ const INSPECTOR_SCRIPT = `
   }
   assignIds();
 
-  document.addEventListener('click', e => {
-    e.preventDefault(); e.stopPropagation();
-    if (sel) { sel.style.outline = ''; sel.style.outlineOffset = ''; }
-    sel = e.target;
-    sel.style.outline = '2px solid #FB8733';
-    sel.style.outlineOffset = '2px';
+  function clearSelection() {
+    if (sel) {
+      sel.classList.remove('__lanthanum-selected');
+      sel = null;
+    }
+    window.parent.postMessage({ type: 'ELEMENT_DESELECTED' }, '*');
+  }
+
+  function selectElement(el) {
+    if (sel === el) return;
+    // Clear previous
+    if (sel) sel.classList.remove('__lanthanum-selected');
+    // Remove hover from new target
+    el.classList.remove('__lanthanum-hovered');
+    // Set new selection
+    sel = el;
+    sel.classList.add('__lanthanum-selected');
+
     const rect = sel.getBoundingClientRect();
     window.parent.postMessage({
       type: 'ELEMENT_SELECTED',
@@ -45,23 +67,47 @@ const INSPECTOR_SCRIPT = `
       styles: sel.getAttribute('style') || '',
       outerHTML: sel.outerHTML.slice(0, 600),
     }, '*');
+  }
+
+  document.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const target = e.target;
+    // Click on body or html = deselect
+    if (target === document.body || target === document.documentElement) {
+      clearSelection();
+      return;
+    }
+    selectElement(target);
+  }, true);
+
+  document.addEventListener('dblclick', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    clearSelection();
   }, true);
 
   document.addEventListener('mouseover', e => {
-    if (e.target === sel) return;
-    e.target._prevOutline = e.target.style.outline;
-    e.target.style.outline = '1px dashed rgba(251,135,51,0.35)';
+    const target = e.target;
+    if (target === sel || target === document.body || target === document.documentElement) return;
+    target.classList.add('__lanthanum-hovered');
   }, true);
+
   document.addEventListener('mouseout', e => {
-    if (e.target === sel) return;
-    e.target.style.outline = e.target._prevOutline || '';
+    const target = e.target;
+    if (target === sel) return;
+    target.classList.remove('__lanthanum-hovered');
   }, true);
 
   window.addEventListener('message', e => {
-    const { type, id, styles } = e.data;
+    const { type, id, styles } = e.data || {};
     if (type === 'APPLY_STYLES' && id && styles) {
       const el = document.querySelector('[data-lid="' + id + '"]') || document.getElementById(id);
       if (el) Object.entries(styles).forEach(([p, v]) => { el.style[p] = v; });
+    }
+    if (type === 'CLEAR_SELECTION') {
+      clearSelection();
     }
   });
 

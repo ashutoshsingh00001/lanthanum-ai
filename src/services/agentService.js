@@ -112,18 +112,21 @@ async function executeSingleTool(call, actions) {
     }
 
     case 'generate_ui': {
+      const { default: designGuidelinesText } = await import('../prompts/design-guidelines.md?raw');
       const HTML_SYSTEM_PROMPT = `You are a world-class UI/UX designer and elite frontend developer. Generate a COMPLETE, self-contained HTML document for the requested UI.
+
+DESIGN GUIDELINES:
+${designGuidelinesText}
 
 RULES:
 1. Return ONLY valid, complete HTML starting with <!DOCTYPE html>
 2. Include Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
-3. Include modern fonts and DaisyUI for premium components.
-4. DESIGN PRINCIPLES:
-   - Use vibrant, harmonious color palettes (avoid default colors).
-   - Use modern patterns: Bento grids, glassmorphism, sleek gradients.
-   - Add subtle micro-animations (hover:scale-[1.02], transition-all).
-   - Ensure ample whitespace, perfect alignment, and high-quality typography.
-5. Root element should be a <body> with min-h-screen and a modern background.
+3. Include DaisyUI via CDN if needed: <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
+4. Use Google Fonts (Inter + Plus Jakarta Sans).
+5. Choose the BEST theme for the content — light themes with subtle accents are often more premium than dark.
+6. Make the UI feel alive with hover effects, transitions, and micro-animations.
+7. Use realistic, contextual copy — never use placeholder "Lorem ipsum" text.
+8. Root element should be a <body> with min-h-screen and a modern background.
 
 RESPONSE FORMAT (only HTML, no explanations):
 <!DOCTYPE html>
@@ -133,23 +136,23 @@ RESPONSE FORMAT (only HTML, no explanations):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generated UI</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
-            heading: ['Outfit', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
           },
         }
       }
     }
   </script>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
-  <!-- UI content here -->
-      </body>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen antialiased">
+  <!-- Premium UI content here -->
+</body>
 </html>`;
 
       try {
