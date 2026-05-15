@@ -1,10 +1,14 @@
 import React from 'react';
+import { loader } from '@monaco-editor/react';
 import { CanvasProvider, useCanvas } from './state/CanvasContext';
 import ChatPanel from './components/ChatPanel';
 import InteractivePreview from './components/InteractivePreview';
 import CodeEditorPanel from './components/CodeEditorPanel';
 import Header from './components/Header';
 import { Code2, Layout, MousePointer2 } from 'lucide-react';
+
+// Start downloading the massive VS Code engine in the background immediately!
+loader.init();
 
 function AppContent() {
   const { state, actions } = useCanvas();
