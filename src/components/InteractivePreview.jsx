@@ -166,7 +166,7 @@ export default function InteractivePreview({ interactive = false }) {
   const iframeRef = useRef(null);
   const [selection, setSelection] = useState(null);
 
-  const empty = `<!DOCTYPE html><html><head><style>body{margin:0;background:#0a0a0f;height:100vh;display:flex;align-items:center;justify-content:center;}<p{color:rgba(255,255,255,.2);font-family:Inter,sans-serif;font-size:14px;}</style></head><body><p>AI-generated UI will appear here</p></body></html>`;
+  const empty = `<!DOCTYPE html><html><head><style>body{margin:0;background:#0a0a0f;height:100vh;display:flex;align-items:center;justify-content:center;}</style></head><body></body></html>`;
 
   const finalCode = useMemo(() => {
     const code = mainCode || empty;
