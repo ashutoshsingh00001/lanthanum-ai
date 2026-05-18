@@ -200,10 +200,9 @@ export default function LandingPage() {
           <div className="step-card">
             <div className="step-number">1</div>
             <div className="step-icon"></div>
-            <h3 className="step-title">Choose Framework</h3>
+            <h3 className="step-title">Start with Vanilla JS</h3>
             <p className="step-desc">
-              Pick your stack — Vanilla JS, React, Vue, or Svelte with CSS,
-              Tailwind, or Bootstrap.
+              The current Beta version focuses exclusively on pure HTML, CSS, and Vanilla JS for maximum speed and simplicity.
             </p>
           </div>
 
@@ -239,75 +238,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Frameworks Section */}
-      <section className="landing-section" id="frameworks">
+      {/* Roadmap Section */}
+      <section className="landing-section" id="roadmap">
         <div className="fade-in-section" ref={addToRefs}>
           <div className="section-header">
             <div className="section-label">
               <Monitor size={14} />
-              Supported Stacks
+              Product Roadmap
             </div>
           </div>
         </div>
 
-        <div className="frameworks-grid fade-in-section" ref={addToRefs}>
-          <div className="framework-card">
-            <div className="framework-icon">
-              <svg viewBox="0 0 630 630" width="32" height="32">
-                <rect width="630" height="630" rx="80" fill="#F7DF1E" />
-                <path d="M423.2 492.19c12.69 20.72 29.2 35.95 58.4 35.95 24.53 0 40.2-12.26 40.2-29.2 0-20.3-16.1-27.49-43.1-39.3l-14.8-6.35c-42.72-18.2-71.1-41-71.1-89.2 0-44.4 33.83-78.2 86.7-78.2 37.64 0 64.7 13.1 84.2 47.4l-46.1 29.6c-10.15-18.2-21.1-25.37-38.1-25.37-17.34 0-28.33 11-28.33 25.37 0 17.76 11 24.95 36.4 35.95l14.8 6.34c50.3 21.57 78.7 43.56 78.7 93 0 53.3-41.87 82.5-98.1 82.5-54.98 0-90.5-26.2-107.88-60.54zm-209.13 5.13c9.3 16.5 17.76 30.45 38.1 30.45 19.45 0 31.72-7.61 31.72-37.2v-201.3h59.2v202.1c0 61.3-35.94 89.2-88.4 89.2-47.4 0-74.85-24.53-88.81-54.075z" fill="#000" />
-              </svg>
-            </div>
-            <div className="framework-name">Vanilla JS</div>
-            <div className="framework-desc">Pure HTML/CSS/JS</div>
+        <div className="roadmap-grid fade-in-section" ref={addToRefs}>
+          <div className="roadmap-card active">
+            <div className="roadmap-badge">Current</div>
+            <h3 className="roadmap-title">Beta Release</h3>
+            <p className="roadmap-desc">
+              A rapid UI generator prototype using Vanilla HTML, CSS, and JavaScript.
+            </p>
+            <ul className="roadmap-list">
+              <li><Sparkles size={14}/> Vanilla HTML, CSS, & JS</li>
+              <li><Sparkles size={14}/> AI UI Generation</li>
+              <li><Sparkles size={14}/> Live Rendering</li>
+              <li><Sparkles size={14}/> Rapid Prototyping</li>
+            </ul>
           </div>
-          <div className="framework-card">
-            <div className="framework-icon">
-              <svg viewBox="-11.5 -10.232 23 20.463" width="32" height="32">
-                <circle r="2.05" fill="#61DAFB" />
-                <g fill="none" stroke="#61DAFB" strokeWidth="1">
-                  <ellipse rx="11" ry="4.2" />
-                  <ellipse rx="11" ry="4.2" transform="rotate(60)" />
-                  <ellipse rx="11" ry="4.2" transform="rotate(120)" />
-                </g>
-              </svg>
-            </div>
-            <div className="framework-name">React</div>
-            <div className="framework-desc">Component-based UI</div>
-          </div>
-          <div className="framework-card">
-            <div className="framework-icon">
-              <svg viewBox="0 0 261.76 226.69" width="32" height="32">
-                <path d="M161.096.001l-30.224 52.35L100.647.001H0l130.877 226.688L261.76.001z" fill="#41B883" />
-                <path d="M161.096.001l-30.224 52.35L100.647.001H52.346l78.526 136.01L209.398.001z" fill="#34495E" />
-              </svg>
-            </div>
-            <div className="framework-name">Vue.js</div>
-            <div className="framework-desc">Progressive framework</div>
-          </div>
-          <div className="framework-card">
-            <div className="framework-icon">
-              <svg viewBox="0 0 180 180" width="32" height="32">
-                <mask id="nMask" style={{ maskType: 'alpha' }}>
-                  <circle cx="90" cy="90" r="90" fill="#000" />
-                </mask>
-                <g mask="url(#nMask)">
-                  <circle cx="90" cy="90" r="90" fill="#000" />
-                  <path d="M149.508 157.52L69.142 54H54v71.97h12.114V69.384l73.885 95.461a90.304 90.304 0 009.509-7.325z" fill="url(#nGrad1)" />
-                  <rect x="115" y="54" width="12" height="72" fill="url(#nGrad2)" />
-                </g>
-                <defs>
-                  <linearGradient id="nGrad1" x1="109" y1="116.5" x2="144.5" y2="160.5" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#fff" /><stop offset="1" stopColor="#fff" stopOpacity="0" />
-                  </linearGradient>
-                  <linearGradient id="nGrad2" x1="121" y1="54" x2="120.799" y2="106.875" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#fff" /><stop offset="1" stopColor="#fff" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            <div className="framework-name">Next.js</div>
-            <div className="framework-desc">React meta-framework</div>
+
+          <div className="roadmap-card future">
+            <div className="roadmap-badge future">Coming Soon</div>
+            <h3 className="roadmap-title">v1.0 Release</h3>
+            <p className="roadmap-desc">
+              A full desktop app code editor with visual editing support for building macOS and Windows applications.
+            </p>
+            <ul className="roadmap-list">
+              <li><ArrowRight size={14}/> Multi-Framework Support (React, Vue, Svelte)</li>
+              <li><ArrowRight size={14}/> Visual Property Editor</li>
+              <li><ArrowRight size={14}/> Native macOS & Windows App Export</li>
+              <li><ArrowRight size={14}/> Full Desktop IDE Experience</li>
+            </ul>
           </div>
         </div>
       </section>
